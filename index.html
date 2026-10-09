@@ -15,9 +15,31 @@
             overflow: hidden;
             color: white;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            /* Elegant, deep background gradient */
-            background-image: 
-                radial-gradient(circle at 50% 40%, #0d0626 0%, #03010a 60%, #000 100%);
+            background-image: radial-gradient(circle at 50% 40%, #09041a 0%, #020108 70%, #000 100%);
+        }
+        
+        /* Ambient deep space stardust layer */
+        #bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        /* Subtle cinematic film grain overlay */
+        #grain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.06'/%3E%3C/svg%3E");
         }
         
         #scene-container {
@@ -25,9 +47,9 @@
             width: 100vmin;
             height: 100vmin;
             perspective: 1500px;
+            z-index: 2; /* Sits between stardust and film grain */
         }
         
-        /* A subtle glowing ambient core behind the math */
         #core-glow {
             position: absolute;
             top: 50%;
@@ -41,7 +63,7 @@
             pointer-events: none;
         }
 
-        svg {
+        svg#canvas {
             position: absolute;
             top: 0;
             left: 0;
@@ -59,45 +81,100 @@
     </style>
 </head>
 <body>
+    <canvas id="bg-canvas"></canvas>
+    
     <div id="scene-container">
         <div id="core-glow"></div>
         <svg id="canvas" viewBox="-500 -500 1000 1000"></svg>
     </div>
+    
+    <!-- Grain overlay on top of everything -->
+    <div id="grain"></div>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const numRoses = 32; // Increased complexity
+        // --- BACKGROUND STARDUST ENGINE ---
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        
+        let width, height;
+        const particles = [];
+        
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            bgCanvas.width = width;
+            bgCanvas.height = height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Create 150 slow-moving, pulsing particles
+        for(let i=0; i<150; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 1.5 + 0.2, // Tiny specs
+                speedX: (Math.random() - 0.5) * 0.1, // Ultra slow drift
+                speedY: (Math.random() - 0.5) * 0.1,
+                baseOpacity: Math.random() * 0.4 + 0.1,
+                pulseSpeed: Math.random() * 0.01 + 0.005,
+                pulsePhase: Math.random() * Math.PI * 2
+            });
+        }
+
+        function animateBackground() {
+            bgCtx.clearRect(0, 0, width, height);
+            
+            particles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                
+                // Wrap around edges seamlessly
+                if(p.x < 0) p.x = width;
+                if(p.x > width) p.x = 0;
+                if(p.y < 0) p.y = height;
+                if(p.y > height) p.y = 0;
+                
+                // Slowly pulse the opacity
+                p.pulsePhase += p.pulseSpeed;
+                const currentOpacity = p.baseOpacity + Math.sin(p.pulsePhase) * 0.2;
+                
+                bgCtx.beginPath();
+                bgCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                bgCtx.fillStyle = `rgba(160, 200, 255, ${Math.max(0.02, currentOpacity)})`;
+                bgCtx.fill();
+            });
+        }
+
+        // --- FOREGROUND MATH ENGINE ---
+        const canvasSvg = document.getElementById('canvas');
+        const numRoses = 32;
         const paths = [];
 
-        // Initialize SVG paths
         for(let i=0; i<numRoses; i++) {
             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
             path.setAttribute("fill", "none");
-            
-            // Outer rings thinner, inner rings slightly thicker
             const strokeW = 0.3 + (1 - i / numRoses) * 1.5; 
             path.setAttribute("stroke-width", strokeW.toString());
-            
-            // Color-dodge creates blown-out, glowing neon intersections
             path.setAttribute("style", "mix-blend-mode: color-dodge; stroke-linecap: round;");
-            
-            canvas.appendChild(path);
+            canvasSvg.appendChild(path);
             paths.push(path);
         }
 
-        // We separate morph speed (glacial) from color speed (active shimmering)
         let morphTime = 0;
         let colorTime = 0;
 
         function animate() {
-            morphTime += 0.00001; // Glacial shape morphing
-            colorTime += 0.0005;  // Subtle, continuous color shifting
+            // Update both engines
+            animateBackground();
+
+            morphTime += 0.00001; 
+            colorTime += 0.0005;  
 
             for(let p=0; p<numRoses; p++) {
                 const layerOffset = p * 0.035;
                 const t = morphTime + layerOffset;
                 
-                // Maurer Rose equation
                 const n = Math.sin(t * 0.8) * 5 + 7;
                 const d = Math.cos(t * 0.5) * 15 + 29;
                 
@@ -121,12 +198,9 @@
                 
                 paths[p].setAttribute("d", dStr);
                 
-                // Sophisticated Aurora / Bioluminescent Palette
-                // Shifts smoothly between Cyan (180), Deep Blue (240), and Magenta (320)
                 const hueOscillator = Math.sin(colorTime + p * 0.1); 
                 const hue = 250 + hueOscillator * 70; 
                 
-                // Depth dynamics: inner rings are brighter and more opaque
                 const depthRatio = 1 - (p / numRoses); 
                 const lightness = 40 + depthRatio * 25 + Math.sin(colorTime * 4 + p) * 10;
                 const opacity = 0.15 + depthRatio * 0.45;
