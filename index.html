@@ -7,7 +7,7 @@
     <style>
         body {
             margin: 0;
-            background-color: #020204;
+            background-color: #03010a;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -15,113 +15,123 @@
             overflow: hidden;
             color: white;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-image: radial-gradient(circle at center, #0a0a16 0%, #000 100%);
+            /* Elegant, deep background gradient */
+            background-image: 
+                radial-gradient(circle at 50% 40%, #0d0626 0%, #03010a 60%, #000 100%);
         }
         
         #scene-container {
             position: relative;
             width: 100vmin;
             height: 100vmin;
-            perspective: 1200px;
+            perspective: 1500px;
+        }
+        
+        /* A subtle glowing ambient core behind the math */
+        #core-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 45vmin;
+            height: 45vmin;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(90, 40, 255, 0.15) 0%, rgba(0,0,0,0) 70%);
+            filter: blur(25px);
+            pointer-events: none;
         }
 
         svg {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.1));
+            filter: drop-shadow(0 0 20px rgba(120, 80, 255, 0.2));
             transform-style: preserve-3d;
             animation: breathe 240s infinite alternate ease-in-out;
         }
         
         @keyframes breathe {
-            0% { transform: scale(0.95) rotateX(8deg) rotateY(-8deg); }
-            100% { transform: scale(1.05) rotateX(-8deg) rotateY(8deg); }
-        }
-
-        #label {
-            position: absolute;
-            bottom: 40px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-size: 11px;
-            letter-spacing: 8px;
-            text-transform: uppercase;
-            opacity: 0.5;
-            pointer-events: none;
-            font-weight: 300;
+            0% { transform: scale(0.95) rotateX(12deg) rotateY(-12deg); }
+            100% { transform: scale(1.05) rotateX(-12deg) rotateY(12deg); }
         }
     </style>
 </head>
 <body>
     <div id="scene-container">
+        <div id="core-glow"></div>
         <svg id="canvas" viewBox="-500 -500 1000 1000"></svg>
     </div>
 
     <script>
         const canvas = document.getElementById('canvas');
-        const numRoses = 24;
+        const numRoses = 32; // Increased complexity
         const paths = [];
 
         // Initialize SVG paths
         for(let i=0; i<numRoses; i++) {
             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
             path.setAttribute("fill", "none");
-            // Thinner strokes for inner elements, slightly thicker for outer
-            const strokeW = 0.5 + (i / numRoses) * 1.5; 
+            
+            // Outer rings thinner, inner rings slightly thicker
+            const strokeW = 0.3 + (1 - i / numRoses) * 1.5; 
             path.setAttribute("stroke-width", strokeW.toString());
-            path.setAttribute("style", "mix-blend-mode: screen;");
+            
+            // Color-dodge creates blown-out, glowing neon intersections
+            path.setAttribute("style", "mix-blend-mode: color-dodge; stroke-linecap: round;");
+            
             canvas.appendChild(path);
             paths.push(path);
         }
 
-        let time = 0;
+        // We separate morph speed (glacial) from color speed (active shimmering)
+        let morphTime = 0;
+        let colorTime = 0;
 
         function animate() {
-            time += 0.00001; // Glacial, almost imperceptible speed
-            
+            morphTime += 0.00001; // Glacial shape morphing
+            colorTime += 0.0005;  // Subtle, continuous color shifting
+
             for(let p=0; p<numRoses; p++) {
-                // Shift parameters for each layer to create 3D depth / mesh effect
                 const layerOffset = p * 0.035;
-                const t = time + layerOffset;
+                const t = morphTime + layerOffset;
                 
-                // Morphing n and d parameters of the Maurer Rose equation
-                const n = Math.sin(t * 0.8) * 5 + 7;  // Petal morphing
-                const d = Math.cos(t * 0.5) * 15 + 29; // Angular morphing
+                // Maurer Rose equation
+                const n = Math.sin(t * 0.8) * 5 + 7;
+                const d = Math.cos(t * 0.5) * 15 + 29;
                 
-                const scale = 450 - p * 12; 
-                
+                const scale = 460 - p * 13; 
                 let dStr = "";
                 
-                // Calculate the geometry curve
                 for (let i = 0; i <= 360; i += 1) { 
                     const k = i * d * Math.PI / 180;
                     const r = scale * Math.sin(n * k);
                     
-                    // Base coordinates
                     const baseX = r * Math.cos(k);
                     const baseY = r * Math.sin(k);
                     
-                    // Apply continuous rotation to the whole shape
                     const rot = t * 1.5;
                     const x = baseX * Math.cos(rot) - baseY * Math.sin(rot);
                     const y = baseX * Math.sin(rot) + baseY * Math.cos(rot);
                     
-                    if (i === 0) {
-                        dStr += `M ${x.toFixed(2)} ${y.toFixed(2)} `;
-                    } else {
-                        dStr += `L ${x.toFixed(2)} ${y.toFixed(2)} `;
-                    }
+                    if (i === 0) dStr += `M ${x.toFixed(2)} ${y.toFixed(2)} `;
+                    else dStr += `L ${x.toFixed(2)} ${y.toFixed(2)} `;
                 }
                 
                 paths[p].setAttribute("d", dStr);
                 
-                // Color morphing 
-                const hue = (time * 80 + p * 8) % 360;
-                const lightness = 60 + Math.sin(time * 4 + p) * 15;
-                const opacity = 0.1 + (p / numRoses) * 0.4;
+                // Sophisticated Aurora / Bioluminescent Palette
+                // Shifts smoothly between Cyan (180), Deep Blue (240), and Magenta (320)
+                const hueOscillator = Math.sin(colorTime + p * 0.1); 
+                const hue = 250 + hueOscillator * 70; 
                 
-                paths[p].setAttribute("stroke", `hsla(${hue}, 85%, ${lightness}%, ${opacity})`);
+                // Depth dynamics: inner rings are brighter and more opaque
+                const depthRatio = 1 - (p / numRoses); 
+                const lightness = 40 + depthRatio * 25 + Math.sin(colorTime * 4 + p) * 10;
+                const opacity = 0.15 + depthRatio * 0.45;
+                
+                paths[p].setAttribute("stroke", `hsla(${hue}, 95%, ${lightness}%, ${opacity})`);
             }
             
             requestAnimationFrame(animate);
