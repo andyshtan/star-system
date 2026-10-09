@@ -3,126 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Star System SVG</title>
+    <title>Mathematical Resonance</title>
     <style>
         body {
             margin: 0;
-            background-color: #050510;
+            background-color: #020204;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            color: white;
-            font-family: sans-serif;
             overflow: hidden;
-            background-image: 
-                radial-gradient(1px 1px at 10% 20%, white, transparent),
-                radial-gradient(1px 1px at 30% 40%, #ffebbb, transparent),
-                radial-gradient(1px 1px at 50% 10%, white, transparent),
-                radial-gradient(2px 2px at 70% 80%, #bbedff, transparent),
-                radial-gradient(1px 1px at 80% 50%, white, transparent),
-                radial-gradient(1px 1px at 20% 90%, white, transparent),
-                radial-gradient(2px 2px at 90% 30%, #ffebbb, transparent);
-        }
-        svg {
-            width: 90vmin;
-            height: 90vmin;
-        }
-        .orbit {
-            fill: none;
-            stroke: rgba(255, 255, 255, 0.2);
-            stroke-width: 1;
-            stroke-dasharray: 4 4;
-        }
-        .sun {
-            filter: drop-shadow(0 0 30px #FF8C00);
-        }
-        .planet {
-            animation: orbit linear infinite;
-        }
-        @keyframes orbit {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-image: radial-gradient(circle at center, #0a0a16 0%, #000 100%);
         }
         
-        .p1 { animation-duration: 4s; }
-        .p2 { animation-duration: 7s; }
-        .p3 { animation-duration: 12s; }
-        .p4 { animation-duration: 20s; }
+        #scene-container {
+            position: relative;
+            width: 100vmin;
+            height: 100vmin;
+            perspective: 1200px;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.1));
+            transform-style: preserve-3d;
+            animation: breathe 12s infinite alternate ease-in-out;
+        }
+        
+        @keyframes breathe {
+            0% { transform: scale(0.95) rotateX(8deg) rotateY(-8deg); }
+            100% { transform: scale(1.05) rotateX(-8deg) rotateY(8deg); }
+        }
+
+        #label {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            opacity: 0.5;
+            pointer-events: none;
+            font-weight: 300;
+        }
     </style>
 </head>
 <body>
-    <svg viewBox="0 0 1000 1000">
-        <defs>
-            <radialGradient id="sun-grad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
-                <stop offset="20%" style="stop-color:#FFF5A5;stop-opacity:1" />
-                <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#FF4500;stop-opacity:0.9" />
-            </radialGradient>
-            
-            <radialGradient id="p1-grad" cx="30%" cy="30%" r="70%">
-                <stop offset="0%" stop-color="#dddddd"/>
-                <stop offset="100%" stop-color="#444444"/>
-            </radialGradient>
-            
-            <radialGradient id="p2-grad" cx="30%" cy="30%" r="70%">
-                <stop offset="0%" stop-color="#ffcc99"/>
-                <stop offset="100%" stop-color="#995522"/>
-            </radialGradient>
-            
-            <radialGradient id="p3-grad" cx="30%" cy="30%" r="70%">
-                <stop offset="0%" stop-color="#aaddff"/>
-                <stop offset="100%" stop-color="#0044aa"/>
-            </radialGradient>
-            
-            <radialGradient id="p4-grad" cx="30%" cy="30%" r="70%">
-                <stop offset="0%" stop-color="#ff8888"/>
-                <stop offset="100%" stop-color="#aa0000"/>
-            </radialGradient>
-        </defs>
+    <div id="scene-container">
+        <svg id="canvas" viewBox="-500 -500 1000 1000"></svg>
+        <div id="label">Maurer Rose Geometry</div>
+    </div>
 
-        <!-- Orbits -->
-        <circle class="orbit" cx="500" cy="500" r="100" />
-        <circle class="orbit" cx="500" cy="500" r="180" />
-        <circle class="orbit" cx="500" cy="500" r="280" />
-        <circle class="orbit" cx="500" cy="500" r="400" />
+    <script>
+        const canvas = document.getElementById('canvas');
+        const numRoses = 24;
+        const paths = [];
 
-        <!-- Sun -->
-        <circle class="sun" cx="500" cy="500" r="55" fill="url(#sun-grad)" />
+        // Initialize SVG paths
+        for(let i=0; i<numRoses; i++) {
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("fill", "none");
+            // Thinner strokes for inner elements, slightly thicker for outer
+            const strokeW = 0.5 + (i / numRoses) * 1.5; 
+            path.setAttribute("stroke-width", strokeW.toString());
+            path.setAttribute("style", "mix-blend-mode: screen;");
+            canvas.appendChild(path);
+            paths.push(path);
+        }
 
-        <!-- Planet 1 -->
-        <g class="planet p1" style="transform-origin: 500px 500px;">
-            <circle cx="500" cy="400" r="12" fill="url(#p1-grad)" />
-        </g>
+        let time = 0;
+
+        function animate() {
+            time += 0.0015; // Speed of morphing
+            
+            for(let p=0; p<numRoses; p++) {
+                // Shift parameters for each layer to create 3D depth / mesh effect
+                const layerOffset = p * 0.035;
+                const t = time + layerOffset;
+                
+                // Morphing n and d parameters of the Maurer Rose equation
+                const n = Math.sin(t * 0.8) * 5 + 7;  // Petal morphing
+                const d = Math.cos(t * 0.5) * 15 + 29; // Angular morphing
+                
+                const scale = 450 - p * 12; 
+                
+                let dStr = "";
+                
+                // Calculate the geometry curve
+                for (let i = 0; i <= 360; i += 1) { 
+                    const k = i * d * Math.PI / 180;
+                    const r = scale * Math.sin(n * k);
+                    
+                    // Base coordinates
+                    const baseX = r * Math.cos(k);
+                    const baseY = r * Math.sin(k);
+                    
+                    // Apply continuous rotation to the whole shape
+                    const rot = t * 1.5;
+                    const x = baseX * Math.cos(rot) - baseY * Math.sin(rot);
+                    const y = baseX * Math.sin(rot) + baseY * Math.cos(rot);
+                    
+                    if (i === 0) {
+                        dStr += `M ${x.toFixed(2)} ${y.toFixed(2)} `;
+                    } else {
+                        dStr += `L ${x.toFixed(2)} ${y.toFixed(2)} `;
+                    }
+                }
+                
+                paths[p].setAttribute("d", dStr);
+                
+                // Color morphing 
+                const hue = (time * 80 + p * 8) % 360;
+                const lightness = 60 + Math.sin(time * 4 + p) * 15;
+                const opacity = 0.1 + (p / numRoses) * 0.4;
+                
+                paths[p].setAttribute("stroke", `hsla(${hue}, 85%, ${lightness}%, ${opacity})`);
+            }
+            
+            requestAnimationFrame(animate);
+        }
         
-        <!-- Planet 2 -->
-        <g class="planet p2" style="transform-origin: 500px 500px;">
-            <circle cx="500" cy="320" r="20" fill="url(#p2-grad)" />
-            <!-- Atmosphere/Ring -->
-            <ellipse cx="500" cy="320" rx="35" ry="10" fill="none" stroke="rgba(255,200,150,0.5)" stroke-width="3" transform="rotate(20 500 320)" />
-        </g>
-
-        <!-- Planet 3 -->
-        <g class="planet p3" style="transform-origin: 500px 500px;">
-            <circle cx="500" cy="220" r="25" fill="url(#p3-grad)" />
-            <!-- Moon -->
-            <g style="animation: orbit 2s linear infinite; transform-origin: 500px 220px;">
-                <circle cx="500" cy="175" r="5" fill="#ffffff" />
-            </g>
-        </g>
-
-        <!-- Planet 4 -->
-        <g class="planet p4" style="transform-origin: 500px 500px;">
-            <circle cx="500" cy="100" r="18" fill="url(#p4-grad)" />
-            <!-- Moons -->
-            <g style="animation: orbit 3s linear infinite; transform-origin: 500px 100px;">
-                <circle cx="500" cy="65" r="3" fill="#dddddd" />
-            </g>
-            <g style="animation: orbit 5s linear infinite reverse; transform-origin: 500px 100px;">
-                <circle cx="500" cy="50" r="4" fill="#aaaaaa" />
-            </g>
-        </g>
-    </svg>
+        animate();
+    </script>
 </body>
 </html>
