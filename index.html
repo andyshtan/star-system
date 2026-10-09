@@ -30,7 +30,7 @@
             height: 100%;
             filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.1));
             transform-style: preserve-3d;
-            animation: breathe 12s infinite alternate ease-in-out;
+            animation: breathe 24s infinite alternate ease-in-out;
         }
         
         @keyframes breathe {
@@ -78,7 +78,7 @@
         let time = 0;
 
         function animate() {
-            time += 0.0015; // Speed of morphing
+            time += 0.0004; // Speed of morphing (slowed down for ambient vibe)
             
             for(let p=0; p<numRoses; p++) {
                 // Shift parameters for each layer to create 3D depth / mesh effect
