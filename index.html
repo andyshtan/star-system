@@ -4,21 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mathematical Resonance</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%2302000a'/><path d='M50 10 Q55 45 90 50 Q55 55 50 90 Q45 55 10 50 Q45 45 50 10 Z' fill='%2300ffff' opacity='0.8'/><path d='M50 10 Q55 45 90 50 Q55 55 50 90 Q45 55 10 50 Q45 45 50 10 Z' fill='%23ff00ff' opacity='0.8' transform='rotate(45 50 50)'/></svg>">
     <style>
-        body {
+        /* --- GLOBAL STYLES --- */
+        body, html {
             margin: 0;
-            background-color: #000000; /* Pure deep black */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
-            color: white;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        
-        /* Ambient deep space stardust layer */
+
+        #tan-app, #cool-app {
+            display: none; /* Hidden by default, JS will reveal one */
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- TAN.ID STYLES (MAURER ROSE) --- */
+        #tan-app {
+            background-color: #000000;
+            justify-content: center;
+            align-items: center;
+        }
         #bg-canvas {
             position: absolute;
             top: 0;
@@ -29,7 +37,6 @@
             pointer-events: none;
             opacity: 0.9;
         }
-        
         #scene-container {
             position: relative;
             width: 100vmin;
@@ -37,7 +44,6 @@
             perspective: 1500px;
             z-index: 2;
         }
-        
         #core-glow {
             position: absolute;
             top: 50%;
@@ -50,8 +56,7 @@
             filter: blur(25px);
             pointer-events: none;
         }
-
-        svg#canvas {
+        svg#tan-canvas {
             position: absolute;
             top: 0;
             left: 0;
@@ -61,164 +66,212 @@
             transform-style: preserve-3d;
             animation: breathe 240s infinite alternate ease-in-out;
         }
-        
         @keyframes breathe {
             0% { transform: scale(0.95) rotateX(12deg) rotateY(-12deg); }
             100% { transform: scale(1.05) rotateX(-12deg) rotateY(12deg); }
         }
+
+        /* --- COOL.ID STYLES (SUN & PLANETS) --- */
+        #cool-app {
+            background-color: #050510;
+            justify-content: center;
+            align-items: center;
+            background-image: 
+                radial-gradient(1px 1px at 10% 20%, white, transparent),
+                radial-gradient(1px 1px at 30% 40%, #ffebbb, transparent),
+                radial-gradient(1px 1px at 50% 10%, white, transparent),
+                radial-gradient(2px 2px at 70% 80%, #bbedff, transparent),
+                radial-gradient(1px 1px at 80% 50%, white, transparent),
+                radial-gradient(1px 1px at 20% 90%, white, transparent),
+                radial-gradient(2px 2px at 90% 30%, #ffebbb, transparent);
+        }
+        #cool-app svg {
+            width: 90vmin;
+            height: 90vmin;
+        }
+        .orbit {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.2);
+            stroke-width: 1;
+            stroke-dasharray: 4 4;
+        }
+        .sun {
+            filter: drop-shadow(0 0 30px #FF8C00);
+        }
+        .planet {
+            animation: orbit linear infinite;
+        }
+        @keyframes orbit {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .p1 { animation-duration: 4s; }
+        .p2 { animation-duration: 7s; }
+        .p3 { animation-duration: 12s; }
+        .p4 { animation-duration: 20s; }
     </style>
 </head>
 <body>
-    <canvas id="bg-canvas"></canvas>
-    
-    <div id="scene-container">
-        <div id="core-glow"></div>
-        <svg id="canvas" viewBox="-500 -500 1000 1000"></svg>
+
+    <!-- TAN.ID: MAURER ROSE -->
+    <div id="tan-app">
+        <canvas id="bg-canvas"></canvas>
+        <div id="scene-container">
+            <div id="core-glow"></div>
+            <svg id="tan-canvas" viewBox="-500 -500 1000 1000"></svg>
+        </div>
+    </div>
+
+    <!-- COOL.ID: SUN & PLANETS -->
+    <div id="cool-app">
+        <svg viewBox="0 0 1000 1000">
+            <defs>
+                <radialGradient id="sun-grad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                    <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                    <stop offset="20%" style="stop-color:#FFF5A5;stop-opacity:1" />
+                    <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#FF4500;stop-opacity:0.9" />
+                </radialGradient>
+                <radialGradient id="p1-grad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#dddddd"/><stop offset="100%" stop-color="#444444"/>
+                </radialGradient>
+                <radialGradient id="p2-grad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#ffcc99"/><stop offset="100%" stop-color="#995522"/>
+                </radialGradient>
+                <radialGradient id="p3-grad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#aaddff"/><stop offset="100%" stop-color="#0044aa"/>
+                </radialGradient>
+                <radialGradient id="p4-grad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#ff8888"/><stop offset="100%" stop-color="#aa0000"/>
+                </radialGradient>
+            </defs>
+
+            <!-- Orbits -->
+            <circle class="orbit" cx="500" cy="500" r="100" />
+            <circle class="orbit" cx="500" cy="500" r="180" />
+            <circle class="orbit" cx="500" cy="500" r="280" />
+            <circle class="orbit" cx="500" cy="500" r="400" />
+
+            <!-- Sun -->
+            <circle class="sun" cx="500" cy="500" r="55" fill="url(#sun-grad)" />
+
+            <!-- Planet 1 -->
+            <g class="planet p1" style="transform-origin: 500px 500px;">
+                <circle cx="500" cy="400" r="12" fill="url(#p1-grad)" />
+            </g>
+            
+            <!-- Planet 2 -->
+            <g class="planet p2" style="transform-origin: 500px 500px;">
+                <circle cx="500" cy="320" r="20" fill="url(#p2-grad)" />
+                <ellipse cx="500" cy="320" rx="35" ry="10" fill="none" stroke="rgba(255,200,150,0.5)" stroke-width="3" transform="rotate(20 500 320)" />
+            </g>
+
+            <!-- Planet 3 -->
+            <g class="planet p3" style="transform-origin: 500px 500px;">
+                <circle cx="500" cy="220" r="25" fill="url(#p3-grad)" />
+                <g style="animation: orbit 2s linear infinite; transform-origin: 500px 220px;">
+                    <circle cx="500" cy="175" r="5" fill="#ffffff" />
+                </g>
+            </g>
+
+            <!-- Planet 4 -->
+            <g class="planet p4" style="transform-origin: 500px 500px;">
+                <circle cx="500" cy="100" r="18" fill="url(#p4-grad)" />
+                <g style="animation: orbit 3s linear infinite; transform-origin: 500px 100px;">
+                    <circle cx="500" cy="65" r="3" fill="#dddddd" />
+                </g>
+                <g style="animation: orbit 5s linear infinite reverse; transform-origin: 500px 100px;">
+                    <circle cx="500" cy="50" r="4" fill="#aaaaaa" />
+                </g>
+            </g>
+        </svg>
     </div>
 
     <script>
         const isCoolId = window.location.hostname.includes('cool.id');
 
-        // Update title and core glow based on domain
         if (isCoolId) {
-            document.title = "Cool Torus Knot";
-            document.getElementById('core-glow').style.background = 'radial-gradient(circle, rgba(0, 255, 120, 0.15) 0%, rgba(0,0,0,0) 70%)';
-            // Change favicon for cool.id (green/cyan theme)
-            document.querySelector("link[rel*='icon']").href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%23000502'/><path d='M50 10 Q55 45 90 50 Q55 55 50 90 Q45 55 10 50 Q45 45 50 10 Z' fill='%2300ff88' opacity='0.8'/><path d='M50 10 Q55 45 90 50 Q55 55 50 90 Q45 55 10 50 Q45 45 50 10 Z' fill='%2300ffff' opacity='0.8' transform='rotate(45 50 50)'/></svg>";
-        }
-
-        // --- BACKGROUND STARDUST ENGINE ---
-        const bgCanvas = document.getElementById('bg-canvas');
-        const bgCtx = bgCanvas.getContext('2d');
-        
-        let width, height;
-        const particles = [];
-        
-        function resizeCanvas() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            bgCanvas.width = width;
-            bgCanvas.height = height;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        for(let i=0; i<350; i++) {
-            const sizeMultiplier = Math.pow(Math.random(), 4); 
-            particles.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                radius: sizeMultiplier * 3.5 + 0.2, 
-                speedX: (Math.random() - 0.5) * 0.08, 
-                speedY: (Math.random() - 0.5) * 0.08,
-                baseOpacity: Math.random() * 0.5 + 0.1,
-                pulseSpeed: Math.random() * 0.015 + 0.002,
-                pulsePhase: Math.random() * Math.PI * 2
-            });
-        }
-
-        function animateBackground() {
-            bgCtx.clearRect(0, 0, width, height);
+            // --- INITIALIZE COOL.ID (SUN & PLANETS) ---
+            document.title = "Star System";
+            document.getElementById('cool-app').style.display = 'flex';
+            document.querySelector("link[rel*='icon']").href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%23FFA500'/></svg>";
+        } else {
+            // --- INITIALIZE TAN.ID (MAURER ROSE) ---
+            document.getElementById('tan-app').style.display = 'flex';
             
-            particles.forEach(p => {
-                p.x += p.speedX;
-                p.y += p.speedY;
-                
-                if(p.x < 0) p.x = width;
-                if(p.x > width) p.x = 0;
-                if(p.y < 0) p.y = height;
-                if(p.y > height) p.y = 0;
-                
-                p.pulsePhase += p.pulseSpeed;
-                const currentOpacity = p.baseOpacity + Math.sin(p.pulsePhase) * 0.3;
-                
-                bgCtx.beginPath();
-                bgCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                // cool.id gets a minty/teal stardust, tan.id gets blue/cyan
-                if (isCoolId) {
-                    bgCtx.fillStyle = `rgba(150, 255, 200, ${Math.max(0.02, currentOpacity)})`;
-                } else {
-                    bgCtx.fillStyle = `rgba(180, 210, 255, ${Math.max(0.02, currentOpacity)})`;
-                }
-                bgCtx.fill();
-            });
-        }
+            const bgCanvas = document.getElementById('bg-canvas');
+            const bgCtx = bgCanvas.getContext('2d');
+            let width, height;
+            const particles = [];
+            
+            function resizeCanvas() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                bgCanvas.width = width;
+                bgCanvas.height = height;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
 
-        // --- FOREGROUND MATH ENGINE ---
-        const canvasSvg = document.getElementById('canvas');
-        const numShapes = isCoolId ? 40 : 32; 
-        const paths = [];
+            for(let i=0; i<350; i++) {
+                const sizeMultiplier = Math.pow(Math.random(), 4); 
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    radius: sizeMultiplier * 3.5 + 0.2, 
+                    speedX: (Math.random() - 0.5) * 0.08, 
+                    speedY: (Math.random() - 0.5) * 0.08,
+                    baseOpacity: Math.random() * 0.5 + 0.1,
+                    pulseSpeed: Math.random() * 0.015 + 0.002,
+                    pulsePhase: Math.random() * Math.PI * 2
+                });
+            }
 
-        for(let i=0; i<numShapes; i++) {
-            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            path.setAttribute("fill", "none");
-            const strokeW = 0.3 + (1 - i / numShapes) * 1.5; 
-            path.setAttribute("stroke-width", strokeW.toString());
-            path.setAttribute("style", "mix-blend-mode: color-dodge; stroke-linecap: round;");
-            canvasSvg.appendChild(path);
-            paths.push(path);
-        }
+            const canvasSvg = document.getElementById('tan-canvas');
+            const numShapes = 32; 
+            const paths = [];
 
-        let morphTime = 0;
-        let colorTime = 0;
+            for(let i=0; i<numShapes; i++) {
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("fill", "none");
+                const strokeW = 0.3 + (1 - i / numShapes) * 1.5; 
+                path.setAttribute("stroke-width", strokeW.toString());
+                path.setAttribute("style", "mix-blend-mode: color-dodge; stroke-linecap: round;");
+                canvasSvg.appendChild(path);
+                paths.push(path);
+            }
 
-        function animate() {
-            animateBackground();
+            let morphTime = 0;
+            let colorTime = 0;
 
-            morphTime += 0.00001; 
-            colorTime += 0.0005;  
+            function animate() {
+                bgCtx.clearRect(0, 0, width, height);
+                particles.forEach(p => {
+                    p.x += p.speedX; p.y += p.speedY;
+                    if(p.x < 0) p.x = width; if(p.x > width) p.x = 0;
+                    if(p.y < 0) p.y = height; if(p.y > height) p.y = 0;
+                    p.pulsePhase += p.pulseSpeed;
+                    bgCtx.beginPath();
+                    bgCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    bgCtx.fillStyle = `rgba(180, 210, 255, ${Math.max(0.02, p.baseOpacity + Math.sin(p.pulsePhase) * 0.3)})`;
+                    bgCtx.fill();
+                });
 
-            for(let p=0; p<numShapes; p++) {
-                const layerOffset = p * 0.035;
-                const t = morphTime + layerOffset;
-                
-                let dStr = "";
-                
-                if (isCoolId) {
-                    // --- COOL.ID: LISSAJOUS TORUS KNOT ---
-                    const scale = 180 + p * 5;
-                    const pKnot = Math.sin(t * 0.5) * 2 + 3; // Morphing winding parameters
-                    const qKnot = Math.cos(t * 0.3) * 3 + 7;
-                    
-                    for (let i = 0; i <= 360; i += 2) { 
-                        const phi = i * Math.PI / 180;
-                        const r = Math.cos(qKnot * phi) + 2;
-                        
-                        // 3D Torus knot parametric equations
-                        const baseX = scale * r * Math.cos(pKnot * phi);
-                        const baseY = scale * r * Math.sin(pKnot * phi);
-                        
-                        // Slowly rotate the entire knot
-                        const rot = t * 2;
-                        const x = baseX * Math.cos(rot) - baseY * Math.sin(rot);
-                        const y = baseX * Math.sin(rot) + baseY * Math.cos(rot);
-                        
-                        if (i === 0) dStr += `M ${x.toFixed(2)} ${y.toFixed(2)} `;
-                        else dStr += `L ${x.toFixed(2)} ${y.toFixed(2)} `;
-                    }
+                morphTime += 0.00001; 
+                colorTime += 0.0005;  
 
-                    // Cyber-mint / Emerald / Cyan color palette for cool.id
-                    const hueOscillator = Math.sin(colorTime + p * 0.1); 
-                    const hue = 160 + hueOscillator * 40; // 120 to 200 (Greens to Teals)
-                    const depthRatio = 1 - (p / numShapes); 
-                    const lightness = 40 + depthRatio * 25 + Math.sin(colorTime * 4 + p) * 10;
-                    const opacity = 0.15 + depthRatio * 0.45;
-                    
-                    paths[p].setAttribute("stroke", `hsla(${hue}, 95%, ${lightness}%, ${opacity})`);
-
-                } else {
-                    // --- TAN.ID: MAURER ROSE ---
+                for(let p=0; p<numShapes; p++) {
+                    const t = morphTime + p * 0.035;
                     const n = Math.sin(t * 0.8) * 5 + 7;
                     const d = Math.cos(t * 0.5) * 15 + 29;
                     const scale = 460 - p * 13; 
                     
+                    let dStr = "";
                     for (let i = 0; i <= 360; i += 1) { 
                         const k = i * d * Math.PI / 180;
                         const r = scale * Math.sin(n * k);
-                        
                         const baseX = r * Math.cos(k);
                         const baseY = r * Math.sin(k);
-                        
                         const rot = t * 1.5;
                         const x = baseX * Math.cos(rot) - baseY * Math.sin(rot);
                         const y = baseX * Math.sin(rot) + baseY * Math.cos(rot);
@@ -227,23 +280,18 @@
                         else dStr += `L ${x.toFixed(2)} ${y.toFixed(2)} `;
                     }
                     
-                    // Deep Blue / Purple / Magenta for tan.id
-                    const hueOscillator = Math.sin(colorTime + p * 0.1); 
-                    const hue = 250 + hueOscillator * 70; 
+                    const hue = 250 + Math.sin(colorTime + p * 0.1) * 70; 
                     const depthRatio = 1 - (p / numShapes); 
                     const lightness = 40 + depthRatio * 25 + Math.sin(colorTime * 4 + p) * 10;
-                    const opacity = 0.15 + depthRatio * 0.45;
                     
-                    paths[p].setAttribute("stroke", `hsla(${hue}, 95%, ${lightness}%, ${opacity})`);
+                    paths[p].setAttribute("d", dStr);
+                    paths[p].setAttribute("stroke", `hsla(${hue}, 95%, ${lightness}%, ${0.15 + depthRatio * 0.45})`);
                 }
                 
-                paths[p].setAttribute("d", dStr);
+                requestAnimationFrame(animate);
             }
-            
-            requestAnimationFrame(animate);
+            animate();
         }
-        
-        animate();
     </script>
 </body>
 </html>
