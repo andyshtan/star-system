@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star System SVG</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #050510;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            font-family: sans-serif;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(1px 1px at 10% 20%, white, transparent),
+                radial-gradient(1px 1px at 30% 40%, #ffebbb, transparent),
+                radial-gradient(1px 1px at 50% 10%, white, transparent),
+                radial-gradient(2px 2px at 70% 80%, #bbedff, transparent),
+                radial-gradient(1px 1px at 80% 50%, white, transparent),
+                radial-gradient(1px 1px at 20% 90%, white, transparent),
+                radial-gradient(2px 2px at 90% 30%, #ffebbb, transparent);
+        }
+        svg {
+            width: 90vmin;
+            height: 90vmin;
+        }
+        .orbit {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.2);
+            stroke-width: 1;
+            stroke-dasharray: 4 4;
+        }
+        .sun {
+            filter: drop-shadow(0 0 30px #FF8C00);
+        }
+        .planet {
+            animation: orbit linear infinite;
+        }
+        @keyframes orbit {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .p1 { animation-duration: 4s; }
+        .p2 { animation-duration: 7s; }
+        .p3 { animation-duration: 12s; }
+        .p4 { animation-duration: 20s; }
+    </style>
+</head>
+<body>
+    <svg viewBox="0 0 1000 1000">
+        <defs>
+            <radialGradient id="sun-grad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                <stop offset="20%" style="stop-color:#FFF5A5;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FF4500;stop-opacity:0.9" />
+            </radialGradient>
+            
+            <radialGradient id="p1-grad" cx="30%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#dddddd"/>
+                <stop offset="100%" stop-color="#444444"/>
+            </radialGradient>
+            
+            <radialGradient id="p2-grad" cx="30%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#ffcc99"/>
+                <stop offset="100%" stop-color="#995522"/>
+            </radialGradient>
+            
+            <radialGradient id="p3-grad" cx="30%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#aaddff"/>
+                <stop offset="100%" stop-color="#0044aa"/>
+            </radialGradient>
+            
+            <radialGradient id="p4-grad" cx="30%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#ff8888"/>
+                <stop offset="100%" stop-color="#aa0000"/>
+            </radialGradient>
+        </defs>
+
+        <!-- Orbits -->
+        <circle class="orbit" cx="500" cy="500" r="100" />
+        <circle class="orbit" cx="500" cy="500" r="180" />
+        <circle class="orbit" cx="500" cy="500" r="280" />
+        <circle class="orbit" cx="500" cy="500" r="400" />
+
+        <!-- Sun -->
+        <circle class="sun" cx="500" cy="500" r="55" fill="url(#sun-grad)" />
+
+        <!-- Planet 1 -->
+        <g class="planet p1" style="transform-origin: 500px 500px;">
+            <circle cx="500" cy="400" r="12" fill="url(#p1-grad)" />
+        </g>
+        
+        <!-- Planet 2 -->
+        <g class="planet p2" style="transform-origin: 500px 500px;">
+            <circle cx="500" cy="320" r="20" fill="url(#p2-grad)" />
+            <!-- Atmosphere/Ring -->
+            <ellipse cx="500" cy="320" rx="35" ry="10" fill="none" stroke="rgba(255,200,150,0.5)" stroke-width="3" transform="rotate(20 500 320)" />
+        </g>
+
+        <!-- Planet 3 -->
+        <g class="planet p3" style="transform-origin: 500px 500px;">
+            <circle cx="500" cy="220" r="25" fill="url(#p3-grad)" />
+            <!-- Moon -->
+            <g style="animation: orbit 2s linear infinite; transform-origin: 500px 220px;">
+                <circle cx="500" cy="175" r="5" fill="#ffffff" />
+            </g>
+        </g>
+
+        <!-- Planet 4 -->
+        <g class="planet p4" style="transform-origin: 500px 500px;">
+            <circle cx="500" cy="100" r="18" fill="url(#p4-grad)" />
+            <!-- Moons -->
+            <g style="animation: orbit 3s linear infinite; transform-origin: 500px 100px;">
+                <circle cx="500" cy="65" r="3" fill="#dddddd" />
+            </g>
+            <g style="animation: orbit 5s linear infinite reverse; transform-origin: 500px 100px;">
+                <circle cx="500" cy="50" r="4" fill="#aaaaaa" />
+            </g>
+        </g>
+    </svg>
+</body>
+</html>
